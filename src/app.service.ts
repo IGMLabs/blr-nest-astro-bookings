@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { Client } from "./client.interface";
+import { Client } from "./models/client.interface";
+import { ClientDto } from "./models/client.dto";
 
 @Injectable()
 export class AppService {
@@ -17,12 +18,19 @@ export class AppService {
     return division;
   }
 
+  public division2(someNumber: number, otherNumber: number): number {
+    if (otherNumber === 0) throw new Error(`${otherNumber} is CERO`);
+    const division = someNumber / otherNumber;
+    return division;
+  }
+
   public squareRoot(someNumber: number): number {
     const sqrt = Math.sqrt(someNumber);
     return sqrt;
   }
 
-  public saveClient(client: Client): Client {
+  public saveClient(clientDto: ClientDto): Client {
+    const client: Client = { ...clientDto };
     client.id = Math.random().toString();
     return client;
   }

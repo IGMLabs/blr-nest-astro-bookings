@@ -9,9 +9,14 @@ import {
   Post,
   Put,
   Query,
+  UseFilters,
+  ValidationPipe,
 } from "@nestjs/common";
 import { AppService } from "./app.service";
-import { Client } from "./client.interface";
+import { Client } from "./models/client.interface";
+import { BusinessErrorFilter } from "./core/filters/business-error.filter";
+import { PositiveNumberPipe } from "./core/pipes/positive-number.pipe";
+import { ClientDto } from "./models/client.dto";
 
 @Controller()
 export class AppController {
@@ -86,11 +91,25 @@ export class AppController {
     return this.appService.division(someNumber, otherNumber);
   }
 
+  @Get("/division/filter/query")
+  @UseFilters(BusinessErrorFilter)
+  public getDivisionQueryFilter(
+    @Query("a", ParseIntPipe) someNumber: number,
+    @Query("b", ParseIntPipe) otherNumber: number,
+  ): number {
+    return this.appService.division2(someNumber, otherNumber);
+  }
+
   @Get("/squareRoot/query")
   public getSquareRootQuery(@Query("a", ParseIntPipe) someNumber: number): number {
     if (someNumber < 1) {
       throw new HttpException(`${someNumber} is under 1`, HttpStatus.BAD_REQUEST);
     }
+    return this.appService.squareRoot(someNumber);
+  }
+
+  @Get("/squareRoot/pipe/query")
+  public getSquareRootQueryPipe(@Query("a", PositiveNumberPipe) someNumber: number): number {
     return this.appService.squareRoot(someNumber);
   }
 
@@ -107,7 +126,15 @@ export class AppController {
   }
 
   @Post("client")
-  public postClient(@Body() payload: Client): Client {
+  public postClient(
+    @Body(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    )
+    payload: ClientDto,
+  ): Client {
     return this.appService.saveClient(payload);
   }
 

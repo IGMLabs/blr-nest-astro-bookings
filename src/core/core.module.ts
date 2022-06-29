@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from "@nestjs/common";
-import { APP_PIPE } from "@nestjs/core";
-import { ThrottlerModule } from "@nestjs/throttler";
+import { APP_GUARD, APP_PIPE } from "@nestjs/core";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import helmet from "helmet";
 import { MonitorMiddleware } from "./middlewares/monitor.middleware";
 import { UtilsService } from "./utils/utils.service";
@@ -15,6 +15,10 @@ import { UtilsService } from "./utils/utils.service";
         whitelist: true,
         forbidNonWhitelisted: true,
       }),
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 

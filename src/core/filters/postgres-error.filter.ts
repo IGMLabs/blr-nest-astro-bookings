@@ -1,9 +1,10 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/common";
 import { Response } from "express";
+import { EntityNotFoundError } from "typeorm";
 
 @Catch()
-export class PostgresErrorFilter<T> implements ExceptionFilter {
-  catch(exception: T, host: ArgumentsHost) {
+export class PostgresErrorFilter<EntityNotFoundError> implements ExceptionFilter {
+  catch(exception: EntityNotFoundError, host: ArgumentsHost) {
     const { request, response } = this.getExpressData(host);
     const responseError = this.getResponseError(exception, request);
     response.status(responseError.statusCode).json(responseError);
@@ -18,7 +19,7 @@ export class PostgresErrorFilter<T> implements ExceptionFilter {
     return { request, response };
   }
 
-  private getResponseError(exception: T, request: Request) {
+  private getResponseError(exception: EntityNotFoundError, request: Request) {
     const status = HttpStatus.NOT_FOUND;
     // const MONGO_CONFLICT = 11000;
     // const mongoException: any = exception as any;

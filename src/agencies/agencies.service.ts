@@ -1,34 +1,32 @@
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
 import { AgencyDto } from "src/models/agency.dto";
-import { Agency } from "src/models/agency.interface";
+import { Agency } from "src/models/agency.entity";
 import { UtilsService } from "../core/utils/utils.service";
 
 @Injectable()
 export class AgenciesService {
-  private readonly agencies: Agency[] = [
-    {
-      id: "pepe",
-      name: "manolo",
-    },
-  ];
+  constructor(
+    private utilService: UtilsService,
+    @InjectModel(Agency.name) private readonly agencyModel: Model<Agency>,
+  ) {}
 
-  constructor(private utilService: UtilsService) {}
-  private readonly STRING_BASE = 36;
-
-  public selectAll(): Agency[] {
-    return this.agencies;
+  public async selectAll(): Promise<Agency[]> {
+    return await this.agencyModel.find();
   }
 
-  public findById(id: string): Agency {
-    return this.agencies.find((agency) => agency.id === id);
+  public async findById(id: string): Promise<Agency> {
+    return await this.agencyModel.findById(id);
   }
 
-  public insert(agency: AgencyDto): Agency {
-    const newAgency = {
+  public async insert(agency: AgencyDto) {
+    const newAgency: Agency = await this.agencyModel.create({
       id: this.utilService.createGUID(),
       ...agency,
-    };
-    this.agencies.push(newAgency);
+    });
+
+    await newAgency.save();
     return newAgency;
   }
 }

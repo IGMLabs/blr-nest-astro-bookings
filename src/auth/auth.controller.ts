@@ -9,9 +9,9 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post("/login")
-  login(@Body() login: LoginDto) {
+  async login(@Body() login: LoginDto) {
     try {
-      return this.authService.login(login);
+      return await this.authService.login(login);
     } catch (error) {
       const message: string = error.message;
       throw new HttpException(message, HttpStatus.BAD_REQUEST);
@@ -19,9 +19,9 @@ export class AuthController {
   }
 
   @Post("/register")
-  register(@Body() register: UsuarioDto) {
+  async register(@Body() register: UsuarioDto) {
     try {
-      return this.authService.register(register);
+      return await this.authService.register(register);
     } catch (error) {
       const message: string = error.message;
       throw new HttpException(message, HttpStatus.BAD_REQUEST);
@@ -29,7 +29,7 @@ export class AuthController {
   }
   @Get("/me")
   @UseGuards(AuthGuard("jwt"))
-  public getCurrentUser(@Req() req: any) {
-    return "Holis " + req.user;
+  public async getCurrentUser(@Req() req: any) {
+    return await this.authService.getUser(req.user);
   }
 }

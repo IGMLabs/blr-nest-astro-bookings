@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString } from "class-validator";
-import { Agency } from "./agency.interface";
+import { Agency } from "./agency.entity";
 
 export class AgencyDto implements Partial<Agency> {
   @IsNotEmpty()

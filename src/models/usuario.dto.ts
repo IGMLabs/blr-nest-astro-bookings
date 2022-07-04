@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString } from "class-validator";
-import { Usuario } from "./usuario.inerface";
+import { Usuario } from "./usuario.entity";
 
 export class UsuarioDto implements Partial<Usuario> {
   @IsNotEmpty()

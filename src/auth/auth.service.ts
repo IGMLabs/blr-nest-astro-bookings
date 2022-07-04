@@ -1,45 +1,47 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
 import { UtilsService } from "src/core/utils/utils.service";
 import { Credentials } from "src/models/credentials.interface";
 import { UsuarioDto } from "src/models/usuario.dto";
-import { Usuario } from "src/models/usuario.inerface";
+import { Usuario } from "src/models/usuario.entity";
 import { LoginDto } from "../models/login.dto";
 
 @Injectable()
 export class AuthService {
-  private readonly usuarios: Usuario[] = [
-    {
-      id: "12345",
-      name: "manolo",
-      email: "test1@test.com",
-      password: "12345",
-    },
-  ];
-  constructor(private utilService: UtilsService, private readonly jwtService: JwtService) {}
+  // private readonly usuarios: Usuario[] = [];
 
-  public login(usuario: LoginDto) {
-    const usuarioDB = this.usuarios.find(
-      (usuarioDb) => usuarioDb.email === usuario.email && usuarioDb.password === usuario.password,
-    );
+  constructor(
+    private utilService: UtilsService,
+    private readonly jwtService: JwtService,
+    @InjectModel(Usuario.name) private readonly userModel: Model<Usuario>,
+  ) {}
+
+  public async login(usuario: LoginDto) {
+    const usuarioDB: Usuario = await this.userModel.findOne({ email: usuario.email, password: usuario.password });
     if (!usuarioDB) {
       throw new Error("Usuario o contraseña incorrectos");
     }
     return this.buildCredentials(usuarioDB);
   }
 
-  public register(usuario: UsuarioDto) {
-    const usuarioDB = this.usuarios.find((usuarioDb) => usuarioDb.email === usuario.email);
-    if (usuarioDB) {
-      throw new Error("Ese usuario ya existe");
-    }
-
-    const newUsuario = {
+  public async register(usuario: UsuarioDto) {
+    const newUsuario: Usuario = await this.userModel.create({
       id: this.utilService.createGUID(),
       ...usuario,
-    };
-    this.usuarios.push(newUsuario);
+    });
+
+    await newUsuario.save();
     return this.buildCredentials(newUsuario);
+  }
+
+  public async getUser(id: string): Promise<Usuario> {
+    const usuarioDB: Usuario = await this.userModel.findOne({ id });
+    if (!usuarioDB) {
+      throw new Error("Usuario o contraseña not found");
+    }
+    return usuarioDB;
   }
 
   public buildCredentials(user: Usuario): Credentials {

@@ -47,7 +47,7 @@ export class AuthService {
   public buildCredentials(user: Usuario): Credentials {
     const credentials = {
       id: user.id,
-      token: this.createToken(user),
+      accessToken: this.createToken(user),
     };
     return credentials;
   }

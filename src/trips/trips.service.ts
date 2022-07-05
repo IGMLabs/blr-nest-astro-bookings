@@ -5,11 +5,13 @@ import { CreateTripDto } from "./dto/create-trip.dto";
 import { UpdateTripDto } from "./dto/update-trip.dto";
 import { Trip } from "./entities/trip.entity";
 import { UtilsService } from "../core/utils/utils.service";
+import { Booking } from "../bookings/entities/booking.entity";
 
 @Injectable()
 export class TripsService {
   constructor(
     @InjectRepository(Trip) private tripRepository: Repository<Trip>,
+    @InjectRepository(Booking) private bookingsRepository: Repository<Booking>,
     private readonly utilService: UtilsService,
   ) {}
 
@@ -25,10 +27,11 @@ export class TripsService {
   }
 
   async findOne(id: string) {
-    const trip = await this.tripRepository.findOneBy({ id });
-    if (!trip) {
-      throw new EntityNotFoundError(Trip, id);
-    }
+    const trip = await this.tripRepository.findOne({
+      where: { id: id },
+      relations: { booking: true },
+    });
+    if (!trip) throw new EntityNotFoundError(Trip, id);
     return trip;
   }
 

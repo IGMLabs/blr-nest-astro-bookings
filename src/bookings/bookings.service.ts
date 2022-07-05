@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { CreateBookingDto, CreatePaymentDto } from "./dto/create-booking.dto";
 import { UpdateBookingDto } from "./dto/update-booking.dto";
-import { Booking, Payment } from "./entities/booking.entity";
+import { Booking } from "./entities/booking.entity";
+import { Payment } from "./entities/payment.entity";
 import { UtilsService } from "../core/utils/utils.service";
 import { Repository, EntityNotFoundError, Connection } from "typeorm";
 import { Trip } from "../trips/entities/trip.entity";
@@ -38,6 +39,7 @@ export class BookingsService {
     return booking;
   }
 
+  // eslint-disable-next-line max-lines-per-function
   async createPayment(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
@@ -45,8 +47,10 @@ export class BookingsService {
     try {
       await queryRunner.startTransaction();
       const booking: Booking = await this.bookingsRepository.findOneBy({ id: createPaymentDto.bookingId });
+      console.log(booking);
       this.paymentPlaces(payment, createPaymentDto, booking);
       await this.bookingsRepository.save(booking);
+      await this.tripsRepository.save(booking.trip);
       await this.paymentRepository.save(payment);
       await queryRunner.commitTransaction();
     } catch (dbError) {
@@ -60,6 +64,7 @@ export class BookingsService {
 
   private paymentPlaces(payment: Payment, createPaymentDto: CreatePaymentDto, booking: Booking) {
     if (!booking) throw new EntityNotFoundError(Trip, createPaymentDto.bookingId);
+    console.log(booking.trip.price);
     if (booking.trip.price - payment.amount < 0) throw new Error("Business: Over payment");
     booking.trip.price -= createPaymentDto.amount;
     payment.id = this.utilService.createGUID();
@@ -75,7 +80,7 @@ export class BookingsService {
   }
 
   async findAll() {
-    return `This action returns all bookings`;
+    return await this.bookingsRepository.find();
   }
 
   async findOne(id: string) {
@@ -87,11 +92,17 @@ export class BookingsService {
     return booking;
   }
 
-  async update(id: number, updateBookingDto: UpdateBookingDto) {
-    return `This action updates a #${id} booking`;
+  async update(id: string, updateBookingDto: UpdateBookingDto) {
+    const booking = await this.findOne(id);
+    const updated = {
+      ...booking,
+      ...updateBookingDto,
+    };
+    return await this.bookingsRepository.save(updated);
   }
 
-  async remove(id: number) {
-    return `This action removes a #${id} booking`;
+  async remove(id: string) {
+    const booking = await this.findOne(id);
+    return await this.bookingsRepository.remove(booking);
   }
 }

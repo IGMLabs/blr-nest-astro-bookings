@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { CreateBookingDto, CreatePaymentDto } from "./dto/create-booking.dto";
 import { UpdateBookingDto } from "./dto/update-booking.dto";
 import { Booking } from "./entities/booking.entity";
@@ -10,6 +10,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class BookingsService {
+  private logger = new Logger("BookingService");
+
   constructor(
     private utilService: UtilsService,
     @InjectRepository(Booking) private bookingsRepository: Repository<Booking>,
@@ -18,11 +20,13 @@ export class BookingsService {
     private connection: Connection,
   ) {}
 
+  // eslint-disable-next-line max-lines-per-function
   async create(createBookingDto: CreateBookingDto): Promise<Booking> {
+    this.logger.debug("creating", createBookingDto);
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
     const booking: Booking = this.bookingsRepository.create(createBookingDto);
-
+    this.logger.debug("created Booking", booking);
     try {
       await queryRunner.startTransaction();
       const trip: Trip = await this.tripsRepository.findOneBy({ id: createBookingDto.tripId });
@@ -31,6 +35,7 @@ export class BookingsService {
       await this.bookingsRepository.save(booking);
       await queryRunner.commitTransaction();
     } catch (dbError) {
+      this.logger.debug(dbError);
       await queryRunner.rollbackTransaction();
       throw dbError;
     } finally {

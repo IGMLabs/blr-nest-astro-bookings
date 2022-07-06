@@ -36,7 +36,7 @@ const postgresOptions: TypeOrmModuleOptions = {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
         whitelist: true,
-        forbidNonWhitelisted: true,
+        forbidNonWhitelisted: false,
       }),
     },
     {

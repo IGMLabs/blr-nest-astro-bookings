@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Logger } from "@nestjs/common";
 import { BookingsService } from "./bookings.service";
 import { CreateBookingDto, CreatePaymentDto } from "./dto/create-booking.dto";
 import { UpdateBookingDto } from "./dto/update-booking.dto";
 
 @Controller("bookings")
 export class BookingsController {
+  private logger = new Logger("BookingsController");
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
   create(@Body() createBookingDto: CreateBookingDto) {
+    this.logger.debug("creating", createBookingDto);
     return this.bookingsService.create(createBookingDto);
   }
 

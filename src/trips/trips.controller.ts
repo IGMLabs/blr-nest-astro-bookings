@@ -11,6 +11,7 @@ export class TripsController {
 
   @Post()
   create(@Body() createTripDto: CreateTripDto) {
+    console.log(createTripDto, "create post");
     return this.tripsService.create(createTripDto);
   }
 
